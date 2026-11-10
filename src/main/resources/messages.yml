@@ -1,0 +1,23 @@
+# ======================================================
+# EvergreenPresentSpawner - Message Configuration
+# Supports standard color codes (&a, &c, &l) and Hex (&#rrggbb)
+# ======================================================
+
+prefix: "&#34d399[Evergreen]&r "
+
+no-permission: "&cYou do not have permission to use this command."
+decay-announcement: "&cThe mystery present in region &e%region%&c has decayed and vanished!"
+spawn-announcement: "&aA mystery present has spawned inside region &e%region%&a!"
+no-rewards-configured: "&cNo rewards are currently configured."
+
+command-header: "&6--- EvergreenPresentSpawner Admin Commands ---"
+command-settime-usage: "&e/evergreenpresentspawner settime <minSec> <maxSec> - Change spawn time"
+command-spawn-usage: "&e/evergreenpresentspawner spawn - Force spawn a present now"
+command-reload-usage: "&e/evergreenpresentspawner reload - Reload config and loot files"
+command-settime-invalid: "&cUsage: /evergreenpresentspawner settime <minSeconds> <maxSeconds>"
+command-settime-range-error: "&cMinimum time cannot be greater than maximum time!"
+command-settime-number-error: "&cPlease enter valid numbers for seconds."
+command-settime-success: "&aSuccessfully updated spawn timer range to &e%min%&as - &e%max%&as!"
+command-spawn-success: "&aForced a present spawn cycle!"
+command-reload-success: "&aEvergreenPresentSpawner configuration, loot tables, and messages reloaded!"
+command-unknown: "&cUnknown subcommand. Type /evergreenpresentspawner for help."

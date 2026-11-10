@@ -1,0 +1,39 @@
+# EvergreenPresentSpawner Configuration
+
+# Time range between spawns in seconds (1 to 2 hours default)
+spawn-timer:
+  min-seconds: 3600
+  max-seconds: 7200
+
+# Modular spawn boundaries (Defines areas where presents can randomly spawn)
+regions:
+  zone_one:
+    world: "world"
+    x1: -500
+    z1: -500
+    x2: 500
+    z2: 500
+  # You can add more regions here as needed:
+  # zone_two:
+  #   world: "world"
+  #   x1: 1000
+  #   z1: 1000
+  #   x2: 2000
+  #   z2: 2000
+
+# Custom Player Head Texture for the Present (Base64 Value or Custom Head definition)
+# To use a custom skin, insert a valid Minecraft Base64 texture string below.
+present-head-texture: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjJkOTg3N2RhOGYyZjY5OWY0Yjc4MjQwMmUxNDhlYzFmNmU0NzI4YzM5ZGRiZWEzZjZmNjRlZmVlNzVlNTNkMyJ9fX0="
+decay-timer:
+  enabled: false
+  seconds: 1800 # Time in seconds before an unclaimed present decays (1800s = 30 minutes)
+
+# Present Text Hologram Configuration
+hologram:
+  enabled: false
+  text: "&e&l[?] Present" # Supports & and &#rrggbb color codes
+  height-offset: 0.65
+
+restrictions:
+  above-sea-level-only: true
+  min-y-level: 63

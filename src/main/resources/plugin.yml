@@ -1,0 +1,20 @@
+name: EvergreenPresentSpawner
+version: 1.0.0
+main: evergreen.EvergreenPresentSpawner
+api-version: '26.3'
+authors: [Beanut]
+description: Modular present spawner and loot table plugin.
+
+softdepend: [DecentHolograms]
+
+commands:
+  evergreenpresentspawner:
+    description: Admin commands for EvergreenPresentSpawner
+    aliases: [evgps]
+    permission: evergreenpresentspawner.admin
+    usage: /evergreenpresentspawner [settime|spawn|reload]
+
+permissions:
+  evergreenpresentspawner.admin:
+    description: Gives access to all admin commands for EvergreenPresentSpawner
+    default: op

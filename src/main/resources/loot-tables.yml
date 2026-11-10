@@ -1,0 +1,16 @@
+# EvergreenPresentSpawner Loot Table
+# Each reward has a command template (%player% will be replaced by the finder's name) and a weight (higher weight = more common).
+
+rewards:
+  diamonds:
+    command: "give %player% diamond 3"
+    weight: 50
+  golden_apples:
+    command: "give %player% golden_apple 2"
+    weight: 30
+  money_reward:
+    command: "eco give %player% 500" # Requires Vault/Economy plugin, safe to leave or change
+    weight: 15
+  netherite_scrap:
+    command: "give %player% netherite_scrap 1"
+    weight: 5
