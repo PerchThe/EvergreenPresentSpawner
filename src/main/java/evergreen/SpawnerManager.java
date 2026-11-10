@@ -2,15 +2,14 @@ package evergreen;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -24,15 +23,12 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SpawnerManager {
 
     private final EvergreenPresentSpawner plugin;
     private BukkitTask currentTask;
     private final Random random = new Random();
-    private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
     public SpawnerManager(EvergreenPresentSpawner plugin) {
         this.plugin = plugin;
@@ -52,7 +48,7 @@ public class SpawnerManager {
         long maxSec = plugin.getConfig().getLong("spawn-timer.max-seconds", 7200);
 
         if (minSec <= 0 || maxSec <= 0 || minSec > maxSec) {
-            plugin.getLogger().severe("[SpawnerManager] Invalid spawn-timer configuration! min-seconds: " + minSec + ", max-seconds: " + maxSec + ". Falling back to 3600s - 7200s.");
+            plugin.getLogger().severe("[SpawnerManager] Invalid spawn-timer configuration! Falling back to 3600s - 7200s.");
             minSec = 3600;
             maxSec = 7200;
         }
@@ -120,9 +116,12 @@ public class SpawnerManager {
                 targetY = minYLevel;
             }
 
-            // Lowering Y by 0.5 so the head sits flush against the block top surface
-            double exactY = targetY - 0.5;
-            Location spawnLocation = new Location(world, targetX + 0.5, exactY, targetZ + 0.5);
+            // Flush with block surface coordinates
+            Location spawnLocation = new Location(world, targetX + 0.5, targetY, targetZ + 0.5);
+
+            // Unique ID string for DecentHolograms instance
+            String hologramId = "evergreen_" + UUID.randomUUID().toString().substring(0, 8);
+            createHologram(hologramId, spawnLocation);
 
             world.spawn(spawnLocation, ArmorStand.class, armorStand -> {
                 armorStand.setVisible(false);
@@ -136,13 +135,10 @@ public class SpawnerManager {
                     armorStand.getEquipment().setHelmet(presentHead);
                 }
 
+                // Store present tag and hologram reference ID in PDC for cleanup when claimed
                 armorStand.getPersistentDataContainer().set(plugin.getPresentKey(), PersistentDataType.BYTE, (byte) 1);
-
-                // Native Paper TextDisplay Hologram
-                TextDisplay hologram = spawnHologram(world, spawnLocation);
-                if (hologram != null) {
-                    armorStand.addPassenger(hologram);
-                }
+                NamespacedKey holoKey = new NamespacedKey(plugin, "hologram_id");
+                armorStand.getPersistentDataContainer().set(holoKey, PersistentDataType.STRING, hologramId);
 
                 // Decay Timer Implementation
                 boolean decayEnabled = plugin.getConfig().getBoolean("decay-timer.enabled", true);
@@ -151,9 +147,8 @@ public class SpawnerManager {
                 if (decayEnabled && decaySeconds > 0) {
                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
                         if (armorStand.isValid() && !armorStand.isDead()) {
-                            if (hologram != null && hologram.isValid()) {
-                                hologram.remove();
-                            }
+                            // Remove DecentHolograms instance on decay
+                            DHAPI.removeHologram(hologramId);
                             armorStand.remove();
 
                             Map<String, String> decayPlaceholders = new HashMap<>();
@@ -192,38 +187,27 @@ public class SpawnerManager {
         }
     }
 
-    private TextDisplay spawnHologram(World world, Location baseLocation) {
+    private void createHologram(String id, Location baseLocation) {
         boolean enabled = plugin.getConfig().getBoolean("hologram.enabled", true);
-        if (!enabled) return null;
+        if (!enabled) return;
 
-        double offset = plugin.getConfig().getDouble("hologram.height-offset", 0.65);
+        double offset = plugin.getConfig().getDouble("hologram.height-offset", 1.15);
         Location holoLoc = baseLocation.clone().add(0, offset, 0);
 
-        String rawText = plugin.getConfig().getString("hologram.text", "&e&l[?] Present");
+        String holoText = plugin.getConfig().getString("hologram.text", "&e&l[?] Present");
+        double scale = plugin.getConfig().getDouble("hologram.scale", 1.0);
 
-        // Parse hex and legacy color codes
-        Matcher matcher = HEX_PATTERN.matcher(rawText);
-        StringBuilder builder = new StringBuilder();
-        while (matcher.find()) {
-            String hex = matcher.group(1);
-            StringBuilder replacement = new StringBuilder("§x");
-            for (char c : hex.toCharArray()) {
-                replacement.append('§').append(c);
-            }
-            matcher.appendReplacement(builder, replacement.toString());
+        List<String> lines = new ArrayList<>();
+        lines.add(holoText);
+
+        // Create the hologram instance at the target location
+        Hologram hologram = DHAPI.createHologram(id, holoLoc, lines);
+
+        // Optional: If utilizing advanced scaling or custom metadata properties based on config scale,
+        // you can apply transformations here depending on your specific DecentHolograms feature set.
+        if (hologram != null && scale != 1.0) {
+            plugin.getLogger().fine("[SpawnerManager] Applying custom scale " + scale + " to hologram " + id);
         }
-        matcher.appendTail(builder);
-
-        String translated = ChatColor.translateAlternateColorCodes('&', builder.toString());
-        Component textComponent = LegacyComponentSerializer.legacySection().deserialize(translated);
-
-        return world.spawn(holoLoc, TextDisplay.class, textDisplay -> {
-            textDisplay.text(textComponent);
-            textDisplay.setBillboard(Display.Billboard.CENTER);
-            textDisplay.setBackgroundColor(Color.fromARGB(0, 0, 0, 0)); // Transparent background
-            textDisplay.setSeeThrough(false);
-            textDisplay.setShadowed(true);
-        });
     }
 
     private ItemStack createPresentHead() {

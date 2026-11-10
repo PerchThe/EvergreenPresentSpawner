@@ -11,10 +11,14 @@ repositories {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
+    flatDir {
+        dirs("libs")
+    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    compileOnly(fileTree(mapOf("dir" to "deps", "include" to listOf("*.jar"))))
 }
 
 java {

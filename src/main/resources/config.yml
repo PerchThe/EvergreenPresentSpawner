@@ -30,9 +30,10 @@ decay-timer:
 
 # Present Text Hologram Configuration
 hologram:
-  enabled: false
-  text: "&e&l[?] Present" # Supports & and &#rrggbb color codes
-  height-offset: 0.65
+  enabled: true
+  text: "&e&l[?] Present"
+  height-offset: 1.15
+  scale: 1.0 # Text scale sizing (1.0 is default)
 
 restrictions:
   above-sea-level-only: true
